@@ -34,10 +34,10 @@ public class LTLValidatorFeeder extends MessageFeeder{
 	private int SizeMaxIO = 0;
 	private int SizeFile = 0;
 	private List<VariableConditions> listConditions = new LinkedList<VariableConditions>();
-	private int deepTrace = 0;
+	private int depthTrace = 0;
 	private String typeTrace = "";
-	private int DeepVar = 0;
-	private int DeepValue = 0;
+	private int DepthVar = 0;
+	private int DepthValue = 0;
 	private boolean FileGenerated = false;
 	private String StringLetters = "abcdefghijklmnopqrstuwxyz";
 	
@@ -50,11 +50,13 @@ public class LTLValidatorFeeder extends MessageFeeder{
 	{
 		try 
     	{
-    		//What ever the file path is.
+    		//Create the file and open it
     		FileIO = new File(path);
     		FileOutputStream is = new FileOutputStream(FileIO);
     		OutputStreamWriter osw = new OutputStreamWriter(is); 
     		writer = new BufferedWriter(osw);
+    		
+    		//Write the begining of the file
     		writer.write("<Trace>\n");
     		writer.write(" \n");
     	} 
@@ -66,6 +68,7 @@ public class LTLValidatorFeeder extends MessageFeeder{
 	
 	private void closeFile()
 	{
+		//Close the OutpPut file
 		try 
 		{
 			writer.close();
@@ -87,6 +90,7 @@ public class LTLValidatorFeeder extends MessageFeeder{
 	 
 	 public void setConditionsFile(String path) throws FileNotFoundException, SAXException, IOException
 	 {
+		 //Read the conditions and create VariableCondition Variables to help the analyse
 		 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		 dbf.setValidating(false);
 		 DocumentBuilder db;
@@ -95,16 +99,15 @@ public class LTLValidatorFeeder extends MessageFeeder{
 		{
 			db = dbf.newDocumentBuilder();
 			Document doc = db.parse(new FileInputStream(new File(path)));
-			   
-			//Element RootNode = (Element) doc.getElementsByTagName("conditions").item(0);
 			
+			//Get each conditions variables
 			NodeList itemsList = doc.getElementsByTagName("var");  
 			int itemsCount = itemsList.getLength();
 			int itemValueCount = 0;
 			
+			//Treats each variable
 			for (int i = 0; i<itemsCount; i++) 
 			{
-				//System.out.println("Item: ");
 				VariableConditions Var = new VariableConditions();
 				
 				Node itemNode = itemsList.item(i);
@@ -113,8 +116,7 @@ public class LTLValidatorFeeder extends MessageFeeder{
 			    //Get the name of the variable
 				Node itemNameNode = item.getElementsByTagName("name").item(0);
 				String itemName = itemNameNode.getFirstChild().getNodeValue();
-				Var.setVarName(itemName);
-				//System.out.println("Name: " + itemName);       
+				Var.setVarName(itemName);   
 				
 				//Get all of the value of the variable
 				NodeList ListValue = item.getElementsByTagName("value");
@@ -125,13 +127,21 @@ public class LTLValidatorFeeder extends MessageFeeder{
 				{
 					Node itemValueNode = item.getElementsByTagName("value").item(j);
 					String itemRes = itemValueNode.getFirstChild().getNodeValue();
-					//System.out.println("Value: " + itemRes); 
 					
-					int value = Integer.parseInt(itemRes);
-					Var.addValueVar(value);
-				}   
+					//TODO
+					if(typeTrace.equals("Numbers"))
+					{
+						int value = Integer.parseInt(itemRes);
+						Var.addValueVar(value);
+					}
+					else
+					{
+						Var.addValueVar(itemRes);
+					}
+					
+				}
+				//Add the VariableCondition in the list
 				listConditions.add(Var);
-
 			}
 
 		} 
@@ -140,13 +150,11 @@ public class LTLValidatorFeeder extends MessageFeeder{
 			System.out.println("Parsing error for the Conditions File");
 			e.printStackTrace();
 		}
-		 
-
 	 }
 	 
-	 public void setDeepTrace(int deep)
+	 public void setDepthTrace(int depth)
 	 {
-		  deepTrace = deep;
+		  depthTrace = depth;
 	 }
 	 
 	 public void setTypeTrace(String type)
@@ -154,14 +162,14 @@ public class LTLValidatorFeeder extends MessageFeeder{
 		 typeTrace = type;
 	 }
 	 
-	 public void setDeepVar(int deep)
+	 public void setDepthVar(int depth)
 	 {
-		 DeepVar = deep;
+		 DepthVar = depth;
 	 }
 	 
-	 public void setDeepValue(int deep)
+	 public void setDepthValue(int depth)
 	 {
-		 DeepValue = deep;
+		 DepthValue = depth;
 	 }
 	  
 	 public boolean getFileGenerated()
@@ -178,7 +186,7 @@ public class LTLValidatorFeeder extends MessageFeeder{
 	 {
 		 String value ="";
 		 Random m_RandValue = new Random();
-		 int rand = m_RandValue.nextInt(DeepValue);
+		 int rand = m_RandValue.nextInt(DepthValue);
 		 
 		 if(typeTrace.equals("Numbers"))
 		 {
@@ -186,19 +194,6 @@ public class LTLValidatorFeeder extends MessageFeeder{
 		 }
 		 else if(typeTrace.equals("Letters"))
 		 {
-			 /*if(rand < 25)
-			 {
-				value =  StringLetters.substring(rand, rand+1);
-			 }
-			 else
-			 {
-				 while(rand >=25)
-				 {
-					 rand = rand - 24;
-				 }
-				 value =  StringLetters.substring(rand, rand+1);
-			 }*/
-			 
 			 if(rand >= 25)
 			 {
 				 while(rand >=25)
@@ -229,7 +224,7 @@ public class LTLValidatorFeeder extends MessageFeeder{
 				 value =  StringLetters.substring(rand, rand+1);
 			 }
 		 }
-		 else
+		 else // Default --> Numbers
 		 {
 			 value = String.valueOf(rand);
 		 }
@@ -251,7 +246,10 @@ public class LTLValidatorFeeder extends MessageFeeder{
 	 {
 		 boolean Finish = false;
 		 
+		 //The current size of the file
 		 int sizeFile = getSizeFile();
+		 
+		 //The maximum wanted by the user
 		 int sizeMax = getSizeOutputFile();
 		 
 		 if(sizeMax < sizeFile)
@@ -261,20 +259,9 @@ public class LTLValidatorFeeder extends MessageFeeder{
 			//Set the end of the generation
 			setFileGenerated(Finish);
 		 }
-		/* long size = FileIO.length();
-		 
-		 if(SizeMaxIO < size)
-		 {
-			 Finish = true;
-			 
-			//Close the output file
-			closeFile();
-			//Set the end of the generation
-			setFileGenerated(Finish);
-		 }*/
-		 
 		 return Finish;
 	 }
+	 
 	@Override
 	public String next()
 	{
@@ -285,6 +272,7 @@ public class LTLValidatorFeeder extends MessageFeeder{
 		{
 			try 
 			{
+				//Write the end of the file
 				writer.write("</Trace>");
 				
 				//Close the output file
@@ -303,12 +291,11 @@ public class LTLValidatorFeeder extends MessageFeeder{
 		String XmlEvent = "<Event>\n";
 		int test = m_random.nextInt(100);
 		
-		for(int i =0; i< deepTrace; i++)
+		for(int i =0; i< depthTrace; i++)
 		{
 			if( test <=51)// Create a random numbers of variable
 			{
-				//m_random = new Random();
-				int name = m_random.nextInt(DeepVar);
+				int name = m_random.nextInt(DepthVar);
 				String VarName = "<p" + name + ">";
 				XmlEvent += VarName;
 				
@@ -324,13 +311,27 @@ public class LTLValidatorFeeder extends MessageFeeder{
 					VariableConditions Cond = new VariableConditions();
 					for(int j = 0; j< listConditions.size(); j++)
 					{
+						//Get the name of the current variable in the condition list
 						Cond = listConditions.get(j);
 						String nameCond = Cond.getVarName();
 						
 						if(nameCond.equals("p"+ name))
 						{
-							List listValue = new LinkedList();
-							listValue = Cond.getListValue();
+							//TODO
+							//Get the value(s) of the variable
+							List listValue = null;
+							
+							if(typeTrace.equals("Numbers"))
+							{
+								listValue = new LinkedList<Integer>();
+								listValue = Cond.getListValueInt();
+							}
+							else
+							{
+								listValue = new LinkedList<String>();
+								listValue = Cond.getListValueStr();
+							}
+							
 							
 							if(listValue.size() == 1)
 							{
@@ -338,11 +339,13 @@ public class LTLValidatorFeeder extends MessageFeeder{
 							}
 							else
 							{
+								//Chooses the value at random from the list of choices
 								Random m_RandValue = new Random();
 								int  sizeList = m_RandValue.nextInt(listValue.size());
 								XmlEvent += listValue.get(sizeList).toString();
 							}
 							
+							//Close the variable
 							XmlEvent += "</p" + name + ">\n";
 							ConditionFound = true;
 							
@@ -353,6 +356,7 @@ public class LTLValidatorFeeder extends MessageFeeder{
 					
 					}//for listConditions
 					
+					//Make sure that every variable has a value
 					if(ConditionFound != true)
 					{
 						String Value = ValueVariable();
@@ -363,13 +367,12 @@ public class LTLValidatorFeeder extends MessageFeeder{
 				}// else listConditions.size() == 0
 			}// end test <= 51
 			test = m_random.nextInt(100);
-		
-			//Test
 			ConditionFound = false;
 		}
 		XmlEvent +="</Event>\n";
 		XmlEvent += " \n";
 		
+		//Update the current size of the file
 		int eventLenght = XmlEvent.length();
 		UpdateSizeFile(eventLenght);
 		

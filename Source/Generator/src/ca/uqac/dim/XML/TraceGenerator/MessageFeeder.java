@@ -38,41 +38,73 @@ public abstract class MessageFeeder implements Iterator<String>
   }
   
  
+  /**
+   * Sets up the Output File 
+   * @param path who contains the tree of the folder and the name of it
+   */
   public void SetOutputFile(String path)
   {
 	  
   }
   
+  /**
+   * Sets up the maximum size of the Output File
+   * @param size who contains the size in bytes
+   */
   public void setSizeOutputFile(int size)
   {
 	  
   }
   
+  /**
+   * Sets up the conditions file to analyse if there is one
+   * @param path who contains the tree of the folder and the name of it
+   */
   public void setConditionsFile(String path)throws FileNotFoundException, SAXException, IOException
   {
 	  
   }
   
-  public void setDeepTrace(int deep)
+  /**
+   * Sets up the maximum depth of the trace 
+   * @param depth who contains the maximum depth of the traces
+   */
+  public void setDepthTrace(int depth)
   {
 	  
   }
   
+  /**
+   * Sets up the type of the trace 
+   * @param type who contains the type of the value of the trace ( Numbers, Letters or Both )
+   */
   public void setTypeTrace(String type)
   {
 	  
   }
   
-  public void setDeepVar(int deep)
+  /**
+   * Sets up the maximum depth of the variables
+   * @param depth who contains the maximum depth of the variables
+   */
+  public void setDepthVar(int depth)
   {
 	  
   }
   
-  public void setDeepValue(int deep)
+  /**
+   * Sets up the maximum depth of the values of the variables
+   * @param depth who contains the maximum depth of values of the variables of the traces
+   */
+  public void setDepthValue(int depth)
   {
 	  
   }
   
+  /**
+   * Gets the state of the generation of the traces file (True == Done, False == in progress)
+   * @return the current state of the generation 
+   */
   public boolean getFileGenerated()
   {
 	  return false;

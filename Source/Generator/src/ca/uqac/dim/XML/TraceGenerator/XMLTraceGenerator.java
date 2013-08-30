@@ -1,6 +1,6 @@
 /*
         XMLTraceGenerator, a XML trace generator 
-        Copyright (C) 2013 Maxime Soucy-Boivin
+         Copyright (C) 2013 Maxime Soucy-Boivin
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@ public class XMLTraceGenerator
   {
 	String generator_name = "";
 	boolean FileGenerated = false;
+	int verbosity = 0;
 	    
     // Parse command line arguments
     Options options = setupOptions();
@@ -86,6 +87,16 @@ public class XMLTraceGenerator
         System.exit(ERR_ARGUMENTS);
     }
     
+    //Contains the type of the variables
+    if(c_line.hasOption("t")) 
+    {
+    	mf.setTypeTrace(c_line.getOptionValue("Type"));
+    }
+    else
+    {
+    	System.err.println("No type in Arguments");
+        System.exit(ERR_ARGUMENTS);
+    }
     
     //Contains conditions for the generation of the XML's Trace
     if(c_line.hasOption("c"))
@@ -111,48 +122,42 @@ public class XMLTraceGenerator
 		}
     }
     
-    //Contains the deep for the Traces
+    //Contains the depth for the Traces
     if(c_line.hasOption("d"))
     {
-    	mf.setDeepTrace(Integer.parseInt(c_line.getOptionValue("Deep")));
+    	mf.setDepthTrace(Integer.parseInt(c_line.getOptionValue("Depth")));
     }
     else
     {
-    	System.err.println("No Deep in Arguments");
+    	System.err.println("No Depth in Arguments");
         System.exit(ERR_ARGUMENTS);
     }
     
-    //Contains the type of the variables
-    if(c_line.hasOption("t")) 
-    {
-    	mf.setTypeTrace(c_line.getOptionValue("Type"));
-    }
-    else
-    {
-    	System.err.println("No type in Arguments");
-        System.exit(ERR_ARGUMENTS);
-    }
-    
-    //Contains the variable deep
+    //Contains the variable depth
     if(c_line.hasOption("v"))
     {
-    	mf.setDeepVar(Integer.parseInt(c_line.getOptionValue("VariableDeep")));
+    	mf.setDepthVar(Integer.parseInt(c_line.getOptionValue("VariableDepth")));
     }
     else
     {
-    	System.err.println("No variable deep in Arguments");
+    	System.err.println("No variable depth in Arguments");
         System.exit(ERR_ARGUMENTS);
     }
     
-    //Contains the value deep
+    //Contains the value depth
     if(c_line.hasOption("w"))
     {
-    	mf.setDeepValue(Integer.parseInt(c_line.getOptionValue("DeepValue")));
+    	mf.setDepthValue(Integer.parseInt(c_line.getOptionValue("DepthValue")));
     }
     else
     {
-    	System.err.println("No value deep in Arguments");
+    	System.err.println("No value depth in Arguments");
         System.exit(ERR_ARGUMENTS);
+    }
+    
+    if (c_line.hasOption("verbosity"))
+    {
+      verbosity = Integer.parseInt(c_line.getOptionValue("verbosity"));
     }
    
     FileGenerated = mf.getFileGenerated();
@@ -161,14 +166,32 @@ public class XMLTraceGenerator
     System.out.println("The generation of the Trace is start !!!");
     System.out.println("-----------------------------------------------");
     
+    //Displays the Output File Tree
+    if(verbosity > 0)
+	{
+		System.out.println("The output file is : " + c_line.getOptionValue("FileWriter"));
+		System.out.println("-----------------------------------------------");
+	}
+    
     while(FileGenerated !=true)
     {
     	//Get The current XML Trace
     	String message = mf.next();
-    	System.out.println(message);
+    	
+    	//Displays all of the messages (all of the Traces)
+    	if(verbosity >= 3)
+    	{
+    		System.out.println(message);
+    	}
     	
     	//Update the State of the generation
     	FileGenerated = mf.getFileGenerated();
+    	
+    	//Displays end
+    	if ((FileGenerated == true) && (verbosity < 3))
+    	{
+    		System.out.println(message);
+    	}
     }
     System.out.println("-----------------------------------------------");
   }
@@ -229,29 +252,37 @@ public class XMLTraceGenerator
                 .create("c");
         options.addOption(opt);
      opt = OptionBuilder
-             .withLongOpt("Deep")
+             .withLongOpt("Depth")
              .withArgName("x")
              .hasArg()
              .withDescription(
-                  "Deep of the Traces")
+                  "Depth of the Traces")
                   .create("d");
          options.addOption(opt);  
      opt = OptionBuilder
-              .withLongOpt("VariableDeep")
+              .withLongOpt("VariableDepth")
               .withArgName("x")
               .hasArg()
               .withDescription(
-                  "Deep of the Variables")
+                  "Depth of the Variables")
               .create("v");
          options.addOption(opt);
      opt = OptionBuilder
-              .withLongOpt("DeepValue")
+              .withLongOpt("DepthValue")
               .withArgName("x")
               .hasArg()
               .withDescription(
-                  "Deep of the values")
+                  "Depth of the values")
               .create("w");
           options.addOption(opt);
+     opt = OptionBuilder
+        	  .withLongOpt("verbosity")
+        	  .withArgName("x")
+        	  .hasArg()
+        	  .withDescription(
+        	       "Set verbosity level to x (0 = nothing)")
+        	  .create("z");
+           options.addOption(opt);
     return options;
   }
 
